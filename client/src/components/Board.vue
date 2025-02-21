@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import {ref} from "vue";
 import Field from "@/components/Field.vue";
 
 defineProps<{

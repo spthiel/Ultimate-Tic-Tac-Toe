@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import {ref} from "vue";
 import Player from "../../../server/src/game/Player";
 
 defineProps<{

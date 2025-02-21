@@ -1,5 +1,4 @@
 <script lang="ts">
-import TheWelcome from '../components/TheWelcome.vue';
 import {ref} from "vue";
 
 export default {
