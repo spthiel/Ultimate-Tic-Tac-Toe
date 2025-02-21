@@ -1,5 +1,4 @@
-@tailwind base;
-@tailwind utilities;
+@import "tailwindcss";
 
 .pulse {
     animation: pulse 1.5s ease-in-out infinite;
