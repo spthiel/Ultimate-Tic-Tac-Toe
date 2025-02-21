@@ -1,14 +1,14 @@
-import Board from "./Board";
 import Player, {PlayingPlayer} from "./Player";
 import {Result, WinResult} from "../interfaces";
-import * as ArrayUtils from '../utils/ArrayUtils';
+import Board from "./Board";
 
 export default class {
 
     private state: Player = Player.NONE;
+    private bigBoard: Board;
     private boards: Board[][] = [];
     private players = {'red': false, 'blue': false};
-    private nextBoard: Board|false = false;
+    private nextBoard: Board | false = false;
     private nextBoardX: number;
     private nextBoardY: number;
     private turn: PlayingPlayer = Player.RED;
@@ -23,21 +23,19 @@ export default class {
                 this.boards[y][x] = new Board();
             }
         }
+        this.bigBoard = new Board();
     }
 
     public getId() {
         return this.id;
     }
+    
+    public placeCell(x: number, y: number, player: PlayingPlayer) {
+        return this.place((x / 3) | 0, (y / 3) | 0, x % 3, y % 3, player);
+    }
 
-    public placeCell(x: number, y: number, player: PlayingPlayer): Result|WinResult|false;
-    public placeCell(boardX: number, boardY: number, cellX: number, cellY: number, player: PlayingPlayer): Result|WinResult|false;
-
-    public placeCell(boardX: number, boardY: number, cellX: number|PlayingPlayer, cellY: number = 0, player: PlayingPlayer = undefined): Result|WinResult|false
+    private place(boardX: number, boardY: number, cellX: number, cellY: number = 0, player: PlayingPlayer = undefined): Result|WinResult|false
     {
-        if (player === undefined) {
-            return this.placeCell((boardX / 3) | 0, (boardY / 3) | 0, boardX % 3, boardY % 3, cellX);
-        }
-
         if (player !== this.turn) {
             return false;
         }
@@ -54,13 +52,24 @@ export default class {
 
         const lastPlayer = player;
 
-        let newBoardState = board.placeCell(cellX, cellY, player);
+        let newBoardState = board.place(player, cellX, cellY).getOr(undefined);
+        
+        if (newBoardState === undefined) {
+            return false;
+        }
+        
         this.nextBoard = this.boards[cellY][cellX].getState() === Player.NONE ? this.boards[cellY][cellX] : false;
         this.nextBoardX = cellX;
         this.nextBoardY = cellY;
 
         if (newBoardState != Player.NONE) {
-            let winner = ArrayUtils.calculateWin(this.boards, (board) => board.getState(), {x: boardX, y: boardY});
+            let winner = this.bigBoard.place(newBoardState, boardX, boardY).getOr(undefined);
+            if (winner === undefined) {
+                console.log(`Room ${this.id} ran into an error placing ${newBoardState} at ${boardX}, ${boardY}.`);
+                console.log(`Last move was ${boardX},${boardY}:${cellX},${cellY} by ${player}`);
+                console.log("State of the boards was: ", this.getState());
+                winner = Player.NONE;
+            }
             if (winner !== Player.NONE) {
                 // Set to impossible value so no player can place anymore
                 // @ts-ignore
@@ -97,8 +106,8 @@ export default class {
         for (const boardY of this.boards) {
             for (const board of boardY) {
                 let temp = []
-                for (let {cell} of board) {
-                    temp.push(cell.getState());
+                for (let player of board) {
+                    temp.push(player);
                 }
                 out.push(temp);
             }

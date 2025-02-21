@@ -45,7 +45,7 @@ export default function(server: http.Server) {
         });
 
         socket.on("place", ({x, y}) => {
-            if (color !== Player.NONE) {
+            if (color !== Player.NONE && color !== Player.DRAW) {
                 let result = room.placeCell(x, y, color);
                 if (!result) {
                     socket.emit("place", false);
@@ -60,7 +60,7 @@ export default function(server: http.Server) {
         });
 
         socket.on("disconnect", () => {
-            if (color !== Player.NONE) {
+            if (color !== Player.NONE && color !== Player.DRAW) {
                 room.leave(color);
             }
         })

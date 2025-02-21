@@ -1,40 +1,97 @@
 import Player from "../game/Player";
 
-function checkLine(array: Player[][], x: number, y: number, dx: number, dy: number): Player {
-
-    const winning = array[y][x];
-    if(winning === Player.NONE) {
+function checkSingleLine(array: Player[]): Player {
+    if (array.length === 0) {
+        return Player.NONE
+    }
+    
+    if (array.includes(Player.DRAW)) {
+        return Player.DRAW;
+    }
+    
+    if (array.includes(Player.NONE)) {
         return Player.NONE;
     }
-
-    let count = 1;
-
-    for (let i = 0; i < 2; i++) {
-        let cx = x;
-        let cy = y;
-
-        if (i === 1) {
-            dx = -dx;
-            dy = -dy;
+    
+    if (array.includes(Player.BLUE)) {
+        if (array.includes(Player.RED)) {
+            return Player.DRAW;
         }
-
-        let cPlayer: Player | undefined;
-        while (cPlayer = array[cy += dy]?.[cx += dx]) {
-            if (cPlayer !== winning) {
-                return Player.NONE;
-            }
-            count++;
-        }
+        
+        return Player.BLUE;
     }
-
-    if(count === 3) {
-        return winning;
-    }
-
-    return Player.NONE;
+    
+    return Player.RED
 }
 
-export function calculateWin<T>(array: T[][], transformer: ((value: T) => Player)|undefined = undefined, {x, y}: {x: number, y: number} = {x: -1, y: -1}): Player {
+function checkLine(array: Player[][], x: number, y: number, dx: number, dy: number): Player | false {
+
+    // Checking diagonal
+    if (dx !== 0 && dy !== 0) {
+        const sameSign = (dx ^ dy) >= 0
+        // but not on the correct diagonal
+        if (sameSign && x !== y) {
+            return false;
+        }
+        if (!sameSign && x !== 2 - y) {
+            return false;
+        }
+    }
+    
+    if (dx < 0) {
+        dx = -dx;
+        dy = -dy;
+    }
+    
+    if (dx !== 0) {
+        while (x > 0) {
+            x -= dx;
+            y -= dy;
+        }
+    } else {
+        while (y > 0) {
+            y -= dy;
+        }
+    }
+    
+    const collected = [];
+    
+    for (let i = 0; i < 3; i++) {
+        collected.push(array[y][x]);
+        x += dx;
+        y += dy;
+    }
+    
+    return checkSingleLine(collected);
+}
+
+function *directions() {
+    yield [-1, 1];
+    yield [0, 1];
+    yield [1, 0];
+    yield [1, 1];
+}
+
+function calculateWinningPlayer(array: Player[][], x: number, y: number) {
+    let winner = Player.DRAW;
+    for (const [dx, dy] of directions()) {
+        const lineWinner = checkLine(array, x, y, dx, dy);
+        if (lineWinner === false) {
+            continue;
+        }
+        if (lineWinner === Player.NONE) {
+            winner = Player.NONE;
+            continue;
+        }
+        
+        if (lineWinner !== Player.DRAW) {
+            return lineWinner;
+        }
+    }
+    return winner;
+}
+
+export function calculateWin<T>(array: T[][], transformer: ((value: T) => Player)|undefined, x: number, y: number): Player {
 
     let playerArray: Player[][];
 
@@ -44,35 +101,12 @@ export function calculateWin<T>(array: T[][], transformer: ((value: T) => Player
         playerArray = <Player[][]>array;
     }
 
-    if(x !== -1 && y !== -1) {
-        let winner = checkLine(playerArray, x, y, 0, 1);
-        if(winner === Player.NONE) {
-            winner = checkLine(playerArray, x, y, 1, 0);
-        }
-        if(winner === Player.NONE) {
-            winner = checkLine(playerArray, x, y, 1, 1);
-        }
-        if(winner === Player.NONE) {
-            winner = checkLine(playerArray, x, y, -1, 1);
-        }
-        return winner;
-    } else {
-        let winner: Player;
-        for(let i = 0; i < 3; i++) {
-            winner = checkLine(playerArray, 0, i, 1, 0);
-            if(winner !== Player.NONE) {
-                return winner;
-            }
-            winner = checkLine(playerArray, i, 0, 0, 1);
-            if(winner !== Player.NONE) {
-                return winner;
-            }
-        }
+    return calculateWinningPlayer(playerArray, x, y);
+}
 
-        winner = checkLine(playerArray, 0, 0, 1, 1);
-        if(winner !== Player.NONE) {
-            return winner;
-        }
-        return checkLine(playerArray, 2, 0, -1, 1);
-    }
+export default {
+    checkSingleLine,
+    checkLine,
+    calculateWin,
+    calculateWinningPlayer
 }

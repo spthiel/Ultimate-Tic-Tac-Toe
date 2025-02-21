@@ -30,7 +30,8 @@ defineProps<{
         <div class="inset-0 absolute opacity-40 rounded-sm pointer-events-none transition-all duration-500" :class="{
                             'bg-[var(--red)]': color === Player.RED,
                             'bg-[var(--blue)]': color === Player.BLUE,
-                            'bg-[var(--black)] pulse': color === 3
+                            'bg-[var(--black)]': color === Player.DRAW,
+                            'bg-[var(--black)] pulse': color === -1
                 }"></div>
     </div>
 </template>

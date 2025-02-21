@@ -4,7 +4,7 @@ import {useRoute, useRouter} from "vue-router";
 import type {Ref} from "vue";
 import {onBeforeUnmount, onMounted, ref} from "vue";
 import {socket} from "@/socket";
-import type {SuccessJoin, Result, WinResult, Join, PlaceResult} from '../../../server/src/interfaces';
+import type {Join, PlaceResult, Result, SuccessJoin, WinResult} from '../../../server/src/interfaces';
 import Player from "../../../server/src/game/Player";
 
 export default {
@@ -58,9 +58,9 @@ export default {
 
             if (nextPlayer === ownColor) {
                 if (nextBoard) {
-                    resBoards[nextBoard.x + nextBoard.y * 3] = 3;
+                    resBoards[nextBoard.x + nextBoard.y * 3] = -1;
                 } else {
-                    resBoards = resBoards.map(v => v || 3);
+                    resBoards = resBoards.map(v => v || -1);
                 }
             }
 
@@ -93,12 +93,12 @@ export default {
 
                 let tmp = boards.value;
                 tmp[translatedY] = win;
-                tmp = tmp.map((v :number) => v === 3 ? 0 : v);
+                tmp = tmp.map((v :number) => v === -1 ? 0 : v);
                 if (nextColor === color.value) {
                     if (nextBoard) {
-                        tmp[nextBoard.x + nextBoard.y * 3] = 3;
+                        tmp[nextBoard.x + nextBoard.y * 3] = -1;
                     } else {
-                        tmp = tmp.map((v: number) => v || 3);
+                        tmp = tmp.map((v: number) => v || -1);
                     }
                 }
 
@@ -109,7 +109,7 @@ export default {
 
                 let tmp = boards.value;
                 tmp[translatedY] = win;
-                tmp = tmp.map(v => v === 3 ? 0 : v);
+                tmp = tmp.map(v => v === -1 ? 0 : v);
                 currentColor.value = Player.NONE;
 
                 whoWon.value = win;
@@ -150,6 +150,9 @@ export default {
                 'bg-[var(--blue)]': color === Player.BLUE,
             }"></div>
         </div>
+    </template>
+    <template v-else-if="whoWon === Player.DRAW">
+        <h2 class="text-center text-[var(--black)]">It's a draw!</h2>
     </template>
     <template v-else>
         <h2 class="text-center" :class="{

@@ -7,7 +7,9 @@
     "watch": "",
     "build": "npm run compile",
     "compile": "node build.mjs",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "restart": "npm run build && npm run start",
+    "test": "vitest"
   },
   "author": "",
   "license": "ISC",
@@ -17,6 +19,7 @@
     "nodemon": "^3.1.9",
     "npm-run-all": "^4.1.5",
     "sass": "^1.85.0",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "vitest": "^3.0.6"
   }
 }
