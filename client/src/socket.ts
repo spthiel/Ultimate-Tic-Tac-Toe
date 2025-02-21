@@ -6,7 +6,7 @@ export const state = reactive({
 });
 
 // @ts-ignore
-export const socket = io(undefined, {
+export const socket = io("http://localhost:3000", {
     autoConnect: false,
     reconnection: false
 });
